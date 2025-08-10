@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Game Đỡ Bóng đơn giản</title>
+<style>
+  body {
+    margin: 0; background: #222; display: flex; justify-content: center; align-items: center; height: 100vh; color: #eee; font-family: Arial, sans-serif;
+    user-select: none;
+  }
+  #gameCanvas {
+    background: #111;
+    border: 2px solid #eee;
+    display: block;
+  }
+  #score {
+    margin-top: 10px; text-align: center;
+  }
+</style>
+</head>
+<body>
+<div>
+  <canvas id="gameCanvas" width="400" height="500"></canvas>
+  <div id="score">Điểm: 0</div>
+</div>
+<script>
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+
+  const paddle = {
+    width: 100,
+    height: 15,
+    x: canvas.width / 2 - 50,
+    y: canvas.height - 30,
+    speed: 10,
+  };
+
+  const ball = {
+    x: Math.random() * (canvas.width - 20) + 10,
+    y: 0,
+    radius: 10,
+    speedY: 3,
+  };
+
+  let score = 0;
+  let gameOver = false;
+
+  function drawPaddle() {
+    ctx.fillStyle = '#0f0';
+    ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+  }
+
+  function drawBall() {
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#f00';
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  function update() {
+    if (gameOver) return;
+
+    ball.y += ball.speedY;
+
+    // Check nếu bóng chạm paddle
+    if (
+      ball.y + ball.radius >= paddle.y &&
+      ball.x >= paddle.x &&
+      ball.x <= paddle.x + paddle.width
+    ) {
+      score++;
+      document.getElementById('score').textContent = 'Điểm: ' + score;
+      ball.y = 0;
+      ball.x = Math.random() * (canvas.width - 20) + 10;
+    }
+
+    // Nếu bóng rơi xuống dưới hết ko đỡ đc thì game over
+    if (ball.y - ball.radius > canvas.height) {
+      gameOver = true;
+      alert('Game Over! Điểm của m: ' + score);
+      document.location.reload();
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawPaddle();
+    drawBall();
+  }
+
+  function gameLoop() {
+    update();
+    draw();
+    if (!gameOver) requestAnimationFrame(gameLoop);
+  }
+
+  // Bắt sự kiện di chuyển paddle theo chuột
+  window.addEventListener('mousemove', function(e) {
+    let rect = canvas.getBoundingClientRect();
+    let mouseX = e.clientX - rect.left;
+    paddle.x = mouseX - paddle.width / 2;
+
+    // Giới hạn paddle ko vượt ra ngoài canvas
+    if (paddle.x < 0) paddle.x = 0;
+    if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
+  });
+
+  gameLoop();
+</script>
+</body>
+</html>
